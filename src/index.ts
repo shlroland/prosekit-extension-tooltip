@@ -1,133 +1,146 @@
 import {
-  defineNodeSpec,
-  defineNodeView,
-  definePasteHandler,
+  addMark,
+  defineCommands,
+  defineMarkSpec,
   union,
+  type Extension,
 } from '@prosekit/core'
+import type { Mark, Node } from '@prosekit/pm/model'
+import type { Command } from '@prosekit/pm/state'
 
-export interface YoutubeAttrs {
-  videoID: string
+export interface TooltipAttrs {
+  id: string
+  text: string
 }
 
-const YOUTUBE_EMBED_URL_REGEX =
-  /^https?:\/\/www\.youtube\.com\/embed\/([^\s/?]+)$/
-
-/** Builds the canonical embed URL for a YouTube video. */
-export function getYoutubeEmbedURL(videoID: string): string {
-  return `https://www.youtube.com/embed/${videoID}`
+export interface AddTooltipOptions {
+  id: string
+  text: string
 }
 
-/** Extracts the video ID from a YouTube embed URL, or `undefined` if the string isn't one. */
-export function getYoutubeVideoID(url: string): string | undefined {
-  return url.trim().match(YOUTUBE_EMBED_URL_REGEX)?.[1] || undefined
+export interface UpdateTooltipOptions {
+  id: string
+  text: string
 }
 
-export function defineYoutubeSpec() {
-  return defineNodeSpec<'youtube', YoutubeAttrs>({
-    name: 'youtube',
-    group: 'block',
-    inline: false,
+type TooltipRange = {
+  from: number
+  to: number
+  mark: Mark
+}
+
+export function defineTooltipSpec(): Extension<{
+  Marks: { tooltip: TooltipAttrs }
+}> {
+  return defineMarkSpec<'tooltip', TooltipAttrs>({
+    name: 'tooltip',
+    inclusive: false,
     attrs: {
-      videoID: { default: '', validate: 'string' },
+      id: { validate: 'string' },
+      text: { validate: 'string' },
     },
-    defining: true,
-
     parseDOM: [
       {
-        tag: 'a[data-prosekit-youtube]',
-        priority: 100,
-        getAttrs(element) {
-          const videoID = element.getAttribute('data-prosekit-youtube')
-          if (!videoID) {
-            return false
-          } else {
-            return { videoID } satisfies YoutubeAttrs
-          }
-        },
-      },
-      {
-        tag: 'iframe[data-prosekit-youtube]',
-        getAttrs(element) {
-          const videoID = element.getAttribute('data-prosekit-youtube')
-          if (!videoID) {
-            return false
-          } else {
-            return { videoID } satisfies YoutubeAttrs
-          }
-        },
-      },
-      {
-        tag: 'a',
-        priority: 100,
-        getAttrs(element) {
-          const url = element.getAttribute('href') || ''
-          const videoID = getYoutubeVideoID(url)
-          if (videoID) {
-            return { videoID } satisfies YoutubeAttrs
-          } else {
-            return false
-          }
-        },
+        tag: 'span[data-tooltip-id]',
+        getAttrs: (element) => ({
+          id: element.getAttribute('data-tooltip-id') || '',
+          text: element.getAttribute('data-tooltip-text') || '',
+        }),
       },
     ],
-    toDOM(node) {
-      const attrs = node.attrs as YoutubeAttrs
-      const url = getYoutubeEmbedURL(attrs.videoID)
-      return ['a', { href: url, 'data-prosekit-youtube': attrs.videoID }]
-    },
-    leafText(node) {
-      const attrs = node.attrs as YoutubeAttrs
-      return getYoutubeEmbedURL(attrs.videoID)
-    },
-  })
-}
-
-export function defineYoutubeNodeView() {
-  return defineNodeView({
-    name: 'youtube',
-    constructor(node, view) {
-      const attrs = node.attrs as YoutubeAttrs
-      const url = getYoutubeEmbedURL(attrs.videoID)
-      const document = view.dom.ownerDocument
-      const iframe = document.createElement('iframe')
-      iframe.setAttribute('type', 'text/html')
-      iframe.setAttribute('src', url)
-      iframe.setAttribute('height', '360')
-      iframe.setAttribute('width', '640')
-      iframe.setAttribute('data-prosekit-youtube', attrs.videoID)
-      iframe.setAttribute('frameborder', '0')
-      return {
-        dom: iframe,
-      }
+    toDOM(mark) {
+      const attrs = mark.attrs as TooltipAttrs
+      return [
+        'span',
+        {
+          'data-tooltip-id': attrs.id,
+          'data-tooltip-text': attrs.text,
+        },
+        0,
+      ]
     },
   })
 }
 
-export function defineYoutubePasteHandler() {
-  return definePasteHandler((view, event, slice) => {
-    // Plain-text pastes never reach `parseDOM`, so a pasted YouTube URL would
-    // otherwise be inserted as raw text. Convert it into a youtube node here.
-    const text = slice.content.textBetween(0, slice.content.size).trim()
-    const videoID = getYoutubeVideoID(text)
-    if (!videoID) {
-      return false
+export function defineTooltipCommands(): Extension<{
+  Commands: {
+    addTooltip: [options: AddTooltipOptions]
+    updateTooltip: [options: UpdateTooltipOptions]
+    removeTooltip: [id: string]
+  }
+}> {
+  return defineCommands({
+    addTooltip: (options: AddTooltipOptions) => addTooltipMark(options),
+    updateTooltip: (options: UpdateTooltipOptions) => updateTooltipMark(options),
+    removeTooltip: (id: string) => removeTooltipMark(id),
+  })
+}
+
+export function defineTooltip() {
+  return union(defineTooltipSpec(), defineTooltipCommands())
+}
+
+function addTooltipMark(options: AddTooltipOptions): Command {
+  return (state, dispatch, view) => {
+    const text = options.text.trim()
+    if (state.selection.empty || !text) return false
+
+    return addMark({
+      type: 'tooltip',
+      attrs: { id: options.id, text },
+    })(state, dispatch, view)
+  }
+}
+
+function updateTooltipMark(options: UpdateTooltipOptions): Command {
+  return (state, dispatch) => {
+    const text = options.text.trim()
+    const range = findTooltipRange(state.doc, options.id)
+    if (!range) return false
+
+    if (!text) {
+      dispatch?.(state.tr.removeMark(range.from, range.to, range.mark))
+      return true
     }
 
-    const youtubeType = view.state.schema.nodes.youtube
-    if (!youtubeType) {
-      return false
-    }
+    const markType = state.schema.marks.tooltip
+    const tr = state.tr
+      .removeMark(range.from, range.to, range.mark)
+      .addMark(range.from, range.to, markType.create({ id: options.id, text }))
 
-    const node = youtubeType.create({ videoID } satisfies YoutubeAttrs)
-    view.dispatch(view.state.tr.replaceSelectionWith(node))
+    dispatch?.(tr)
     return true
-  })
+  }
 }
 
-export function defineYoutube() {
-  return union(
-    defineYoutubeSpec(),
-    defineYoutubeNodeView(),
-    defineYoutubePasteHandler(),
-  )
+function removeTooltipMark(id: string): Command {
+  return (state, dispatch) => {
+    const range = findTooltipRange(state.doc, id)
+    if (!range) return false
+
+    dispatch?.(state.tr.removeMark(range.from, range.to, range.mark))
+    return true
+  }
+}
+
+export function findTooltipRange(doc: Node, id: string): TooltipRange | null {
+  let range: TooltipRange | null = null
+
+  doc.descendants((node, pos) => {
+    if (!node.isText) return
+
+    const mark = node.marks.find((mark) => {
+      return mark.type.name === 'tooltip' && (mark.attrs as TooltipAttrs).id === id
+    })
+    if (!mark) return
+
+    if (!range) {
+      range = { from: pos, to: pos + node.nodeSize, mark }
+      return
+    }
+
+    range.to = pos + node.nodeSize
+  })
+
+  return range
 }

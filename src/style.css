@@ -1,0 +1,75 @@
+.prosekit-tooltip-mark {
+  border-radius: 0.125rem;
+  background: color-mix(in srgb, yellow 26%, transparent);
+  padding-inline: 0.125rem;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, orange 70%, currentColor);
+  text-underline-offset: 0.25rem;
+}
+
+.prosekit-tooltip-card {
+  box-sizing: border-box;
+  width: min(22rem, calc(100vw - 2rem));
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 0.5rem;
+  background: canvas;
+  color: canvastext;
+  box-shadow: 0 10px 30px color-mix(in srgb, black 18%, transparent);
+  padding: 0.75rem;
+  font: 14px/1.4 system-ui, sans-serif;
+}
+
+.prosekit-tooltip-preview-row,
+.prosekit-tooltip-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.prosekit-tooltip-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.prosekit-tooltip-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.25rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0.375rem;
+  background: canvas;
+  color: canvastext;
+  padding: 0.375rem 0.5rem;
+  font: inherit;
+}
+
+.prosekit-tooltip-button,
+.prosekit-tooltip-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 0.375rem;
+  background: canvas;
+  color: canvastext;
+  font: inherit;
+  cursor: pointer;
+}
+
+.prosekit-tooltip-button {
+  min-height: 2rem;
+  padding: 0.25rem 0.625rem;
+}
+
+.prosekit-tooltip-icon-button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+.prosekit-tooltip-icon {
+  width: 1rem;
+  height: 1rem;
+}
