@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.0 (2026-06-06)
+
+
+### Features
+
+* add parse rules ([375dfd5](https://github.com/shlroland/prosekit-extension-tooltip/commit/375dfd5728325985a4725e6ec5b0a2540210ea3f))
+* add youtube node view ([102097e](https://github.com/shlroland/prosekit-extension-tooltip/commit/102097eb28ddbf029c412a8f5c12b70ea6731d91))
+* add youtube spec ([803215a](https://github.com/shlroland/prosekit-extension-tooltip/commit/803215ab27d9dae05facd3bb2b417a26ebb6084a))
+* build website ([cc124b9](https://github.com/shlroland/prosekit-extension-tooltip/commit/cc124b9be38ac95dab9ccdef982915dc499d1834))
+* create tooltip extension ([97da761](https://github.com/shlroland/prosekit-extension-tooltip/commit/97da7610c3fa5a9a73416ac3691235e28005b8ba))
+* redesign demo website ([e38616d](https://github.com/shlroland/prosekit-extension-tooltip/commit/e38616dff24718a6d6794d24c8a446ce02a1f269))
+
+
+### Bug Fixes
+
+* install playwright ([8357814](https://github.com/shlroland/prosekit-extension-tooltip/commit/83578140f4f7603dcf62d2caf73f006893f992a9))
+* parse plain-text youtube urls on paste ([#5](https://github.com/shlroland/prosekit-extension-tooltip/issues/5)) ([b1e9bec](https://github.com/shlroland/prosekit-extension-tooltip/commit/b1e9becb429e2328c96f4776ef68620af1a149ed))
+* update clipboard test snapshot ([30138e1](https://github.com/shlroland/prosekit-extension-tooltip/commit/30138e13cb846e6a5317d8869355fd9b26524adc))
+
 ## [1.0.1](https://github.com/prosekit/prosekit-extension-template/compare/v1.0.0...v1.0.1) (2026-06-03)
 
 
