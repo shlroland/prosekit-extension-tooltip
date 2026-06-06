@@ -1,7 +1,7 @@
 {
   "name": "prosekit-extension-tooltip",
   "type": "module",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "packageManager": "pnpm@11.5.1",
   "description": "A ProseKit extension for editable tooltip marks",
   "author": "wsdehl",
