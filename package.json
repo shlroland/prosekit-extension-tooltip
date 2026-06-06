@@ -7,12 +7,12 @@
   "author": "wsdehl",
   "license": "MIT",
   "funding": "https://github.com/sponsors/ocavue",
-  "homepage": "https://github.com/prosekit/prosekit-extension-tooltip",
+  "homepage": "https://github.com/shlroland/prosekit-extension-tooltip",
   "repository": {
     "type": "git",
-    "url": "https://github.com/prosekit/prosekit-extension-tooltip.git"
+    "url": "https://github.com/shlroland/prosekit-extension-tooltip.git"
   },
-  "bugs": "https://github.com/prosekit/prosekit-extension-tooltip/issues",
+  "bugs": "https://github.com/shlroland/prosekit-extension-tooltip/issues",
   "keywords": [
     "prosekit",
     "tooltip",
